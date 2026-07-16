@@ -503,4 +503,42 @@ trait fields_trait {
 
         return new condition_sql('', $where, $params);
     }
+
+    // SKILLSET
+
+    /**
+     * Adds a menu field to the form.
+     *
+     * @param \MoodleQuickForm $mform Form to add the field to.
+     * @param array $group A group to add the field to.
+     * @param \stdClass $field Field info.
+     * @param string $shortname A field shortname.
+     */
+    protected function add_menu_field_dbmultiselect(\MoodleQuickForm $mform, array &$group, \stdClass $field,
+        string $shortname): void {
+        global $DB;
+        // Get the options.
+
+
+        $options = $DB->get_records_menu('profilefield_dbmultiselect', ['typeid' => $field->param1, 'visible' => 1], 'value',
+            'value, value');
+
+        // We need to reformat the options into an array where the name is both the key and the value.
+        $optionsarray = [];
+        foreach ($options as $key =>$value) {
+            $optionsarray[$key] =  $key;
+        }
+
+        $elements = [];
+        $elements[] = $mform->createElement('select', $shortname . '_operator', null, $this->get_menu_operators());
+
+        $elements[] = $mform->createElement('select', $shortname . '_value', $field->name, $optionsarray);
+        $mform->hideIf($shortname . '_value', $shortname . '_operator', 'in', self::TEXT_IS_EMPTY . '|' . self::TEXT_IS_NOT_EMPTY);
+
+        $group[] = $mform->createElement('group', $shortname, '', $elements, '', false);
+        $mform->hideIf($shortname, static::get_form_field(), 'neq', $shortname);
+    }
+
+    // END SKILLSET
+
 }

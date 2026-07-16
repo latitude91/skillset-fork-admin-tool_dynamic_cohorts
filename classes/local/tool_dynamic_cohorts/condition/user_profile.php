@@ -177,6 +177,16 @@ class user_profile extends condition_base {
 
         $fieldvalue = $this->get_field_value_text();
 
+        // SKILLSET
+        global $DB;
+
+        if ($fieldinfo->datatype == 'dbmultiselect') {
+            $fieldvalue = $DB->get_record('profilefield_dbmultiselect', ['value' => $fieldvalue]);
+            $fieldvalue = $fieldvalue->value;
+        }
+
+        // END SKILLSET
+
         return get_string('condition:profile_field_description', 'tool_dynamic_cohorts', (object)[
             'field' => $displayedfieldname,
             'fieldoperator' => $fieldoperator,

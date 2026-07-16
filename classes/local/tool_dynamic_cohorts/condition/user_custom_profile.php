@@ -58,6 +58,9 @@ class user_custom_profile extends user_profile {
             self::FIELD_DATA_TYPE_CHECKBOX,
             self::FIELD_DATA_TYPE_DATETIME,
             self::FIELD_DATA_TYPE_AUTOCOMPLETE,
+            // SKILLSET
+            self::FIELD_DATA_TYPE_DBMULTISELECT,
+            // END SKILLSET
         ];
     }
 
@@ -98,6 +101,11 @@ class user_custom_profile extends user_profile {
                 case self::FIELD_DATA_TYPE_DATETIME:
                     $field->paramtype = PARAM_INT;
                     break;
+                // SKILLSET
+                case self::FIELD_DATA_TYPE_DBMULTISELECT:
+                    $field->paramtype = PARAM_TEXT;
+                    break;
+                // END SKILLSET
                 default:
                     throw new coding_exception('Invalid field type ' . $field->datatype);
             }
@@ -140,6 +148,11 @@ class user_custom_profile extends user_profile {
                 case self::FIELD_DATA_TYPE_DATETIME:
                     $this->add_date_field($mform, $group, $field, $shortname);
                     break;
+                // SKILLSET
+                case self::FIELD_DATA_TYPE_DBMULTISELECT:
+                    $this->add_menu_field_dbmultiselect($mform, $group, $field, $shortname);
+                    break;
+                // END SKILLSET
             }
         }
 
@@ -204,6 +217,12 @@ class user_custom_profile extends user_profile {
             case self::FIELD_DATA_TYPE_AUTOCOMPLETE:
                 $result = $this->get_multiselect_sql($ud, 'data');
                 break;
+            // SKILLSET
+            case self::FIELD_DATA_TYPE_DBMULTISELECT:
+                $result = $this->get_menu_sql($ud, 'data');
+                break;
+            // END SKILLSET
+
         }
 
         if (!empty($result->get_params())) {

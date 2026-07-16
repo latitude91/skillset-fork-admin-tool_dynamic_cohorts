@@ -59,6 +59,14 @@ abstract class condition_base {
      */
     public const FIELD_DATA_TYPE_AUTOCOMPLETE = 'autocomplete';
 
+    // SKILLSET
+    /**
+     * Value for date field types.
+     */
+    public const FIELD_DATA_TYPE_DBMULTISELECT = 'dbmultiselect';
+    // END SKILLSET
+
+
     /**
      * Value for operator text contains.
      */
