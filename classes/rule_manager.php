@@ -363,6 +363,9 @@ class rule_manager {
         $userstodelete = array_diff_key($cohortmembers, $users);
 
         if ($rule->is_bulk_processing()) {
+            $firebulkevents = (bool) get_config('tool_dynamic_cohorts', 'bulkprocessingevents');
+            $cohort = $firebulkevents ? $DB->get_record('cohort', ['id' => $cohortid], '*', MUST_EXIST) : null;
+
             $timeadded = time();
             foreach (array_chunk($userstoadd, self::BULK_PROCESSING_SIZE) as $users) {
                 $records = [];
@@ -374,6 +377,18 @@ class rule_manager {
                     $records[] = $record;
                 }
                 $DB->insert_records('cohort_members', $records);
+
+                if ($firebulkevents) {
+                    foreach ($users as $user) {
+                        $event = \core\event\cohort_member_added::create([
+                            'context' => \context::instance_by_id($cohort->contextid),
+                            'objectid' => $cohortid,
+                            'relateduserid' => $user->id,
+                        ]);
+                        $event->add_record_snapshot('cohort', $cohort);
+                        $event->trigger();
+                    }
+                }
             }
 
             foreach (array_chunk($userstodelete, self::BULK_PROCESSING_SIZE) as $users) {
@@ -382,6 +397,18 @@ class rule_manager {
                 $sql = "userid $insql AND cohortid = :cohort";
                 $inparams['cohort'] = $cohortid;
                 $DB->delete_records_select('cohort_members', $sql, $inparams);
+
+                if ($firebulkevents) {
+                    foreach ($users as $user) {
+                        $event = \core\event\cohort_member_removed::create([
+                            'context' => \context::instance_by_id($cohort->contextid),
+                            'objectid' => $cohortid,
+                            'relateduserid' => $user->userid,
+                        ]);
+                        $event->add_record_snapshot('cohort', $cohort);
+                        $event->trigger();
+                    }
+                }
             }
         } else {
             foreach ($userstoadd as $user) {
