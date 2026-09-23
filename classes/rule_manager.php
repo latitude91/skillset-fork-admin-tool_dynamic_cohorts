@@ -344,10 +344,13 @@ class rule_manager {
 
         $cohortid = $rule->get('cohortid');
 
-        if (!$DB->record_exists('cohort', ['id' => $cohortid])) {
+        $cohort = $DB->get_record('cohort', ['id' => $cohortid]);
+        if (empty($cohort)) {
             $rule->mark_broken();
             return;
         }
+
+        $context = \context::instance_by_id($cohort->contextid)
 
         $users = self::get_matching_users($rule, $userid);
 
@@ -364,7 +367,6 @@ class rule_manager {
 
         if ($rule->is_bulk_processing()) {
             $firebulkevents = (bool) get_config('tool_dynamic_cohorts', 'bulkprocessingevents');
-            $cohort = $firebulkevents ? $DB->get_record('cohort', ['id' => $cohortid], '*', MUST_EXIST) : null;
 
             $timeadded = time();
             foreach (array_chunk($userstoadd, self::BULK_PROCESSING_SIZE) as $users) {
@@ -381,7 +383,7 @@ class rule_manager {
                 if ($firebulkevents) {
                     foreach ($users as $user) {
                         $event = \core\event\cohort_member_added::create([
-                            'context' => \context::instance_by_id($cohort->contextid),
+                            'context' => $context,
                             'objectid' => $cohortid,
                             'relateduserid' => $user->id,
                         ]);
@@ -401,7 +403,7 @@ class rule_manager {
                 if ($firebulkevents) {
                     foreach ($users as $user) {
                         $event = \core\event\cohort_member_removed::create([
-                            'context' => \context::instance_by_id($cohort->contextid),
+                            'context' => $context,
                             'objectid' => $cohortid,
                             'relateduserid' => $user->userid,
                         ]);
