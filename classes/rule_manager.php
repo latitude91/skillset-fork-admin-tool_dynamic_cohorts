@@ -350,7 +350,7 @@ class rule_manager {
             return;
         }
 
-        $context = \context::instance_by_id($cohort->contextid)
+        $context = \context::instance_by_id($cohort->contextid);
 
         $users = self::get_matching_users($rule, $userid);
 
